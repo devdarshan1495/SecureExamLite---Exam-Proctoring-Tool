@@ -59,18 +59,16 @@
                      <div class="selfie-circle-overlay"></div>
                      <i class="fas fa-camera fa-3x" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255, 255, 255, 0.3);"></i>
                 </div>
-                 <!-- Optional: Add capture button -->
-                <button id="captureSelfieBtn" class="btn btn-primary" style="margin-top: 20px;">Capture Selfie</button>
 
-                <div class="progress-indicator">
-                     Step 2 of 2 <!-- Placeholder step indicator -->
+                <div class="progress-indicator" id="progressIndicator">
+                     Step 1 of 2 <!-- Dynamic step indicator -->
                  </div>
                 <div class="progress-bar-container">
-                     <div class="progress-bar" style="width: 50%;"></div> <!-- Placeholder progress (e.g., 50% after step 1) -->
+                     <div class="progress-bar" id="progressBar" style="width: 25%;"></div> <!-- Start at 25% for step 1 -->
                  </div>
 
 
-                 <button id="continueToChecklistBtn" class="btn btn-primary" style="margin-top: 30px;">Continue</button>
+                 <button id="continueToChecklistBtn" class="btn btn-primary" style="margin-top: 30px;">Start Exam</button>
                  
                  <!-- Subtle Back to Login Link -->
                  <div class="back-link-container">
@@ -242,11 +240,23 @@
             const selfieSection = document.getElementById('selfieSection');
             const verifyIdentityBtn = document.querySelector('#studentLoginForm button[type="submit"]');
             const continueToChecklistBtn = document.getElementById('continueToChecklistBtn');
-            const captureSelfieBtn = document.getElementById('captureSelfieBtn'); // Get capture button
             const selfieVideo = document.getElementById('selfieVideo'); // Get video element
+            const progressIndicator = document.getElementById('progressIndicator');
+            const progressBar = document.getElementById('progressBar');
 
             // Initially hide the selfie section
             selfieSection.style.display = 'none';
+
+            // Function to update progress bar
+            function updateProgress(step, total) {
+                const percentage = (step / total) * 100;
+                progressIndicator.textContent = `Step ${step} of ${total}`;
+                progressBar.style.width = `${percentage}%`;
+                console.log(`Progress updated: Step ${step} of ${total} (${percentage}%)`);
+            }
+
+            // Initialize progress - Step 1: Login form submitted
+            // (This will be updated when selfie section is shown)
 
 
             if (studentLoginForm) {
@@ -295,34 +305,25 @@
                     console.log('Simulating successful login, showing selfie verification.');
                     loginFormSection.style.display = 'none'; // Hide login section
                     selfieSection.style.display = 'block'; // Show selfie section
+                    
+                    // Update progress to step 1: Selfie section shown, waiting for camera permissions
+                    updateProgress(1, 2);
 
                      // Simulate starting camera for selfie
                     await startSelfieCamera(); // Placeholder function for camera access
                     // --- End Demo Simulation ---
 
                 });
-            }
-
-            // Add navigation from the "Continue" button in the selfie section to checklist.html
+            }             // Add navigation from the "Continue" button in the selfie section to exam.html (skip room scan)
              if (continueToChecklistBtn) {
                  continueToChecklistBtn.addEventListener('click', () => {
-                     console.log('Continue button clicked in selfie section. Navigating to checklist.');
+                     console.log('Continue button clicked in selfie section. Navigating directly to exam.');
                      // TODO: Ensure selfie capture/upload/verification is complete before navigating
                      // TODO: Stop the selfie camera stream before navigating
                       stopSelfieCamera(); // Placeholder function
-                     window.location.href = 'checklist.html'; // Navigate to the checklist page
+                     window.location.href = 'exam.html'; // Navigate directly to the exam page (skip room scan)
                  });
              }
-
-             // Placeholder for Capture Selfie button
-             if(captureSelfieBtn) {
-                 captureSelfieBtn.addEventListener('click', () => {
-                     console.log('Capture Selfie button clicked (placeholder).');
-                     // TODO: Implement logic to capture frame from selfieVideo
-                     // TODO: Send image data to backend for identity verification
-                 });
-             }
-
 
              // --- Placeholder Camera Functions for Selfie ---
              async function startSelfieCamera() {
@@ -339,6 +340,11 @@
                        if (selfieVideo) {
                            selfieVideo.srcObject = stream;
                            console.log('Selfie camera stream started.');
+                           
+                           // NOW update progress to step 2 - camera permissions granted, ready to start exam
+                           updateProgress(2, 2);
+                           console.log('Camera permissions granted, ready to start exam');
+                           
                            return true;
                        } else {
                             console.error('Selfie video element not found!');
@@ -348,6 +354,8 @@
                   } catch (err) {
                        console.error('Error accessing selfie camera: ', err);
                        alert('Error accessing camera. Please check permissions.'); // Inform user
+                       // Keep progress at step 1 if camera access fails
+                       console.log('Camera access failed, staying at step 1');
                        // TODO: Handle specific errors like permission denied
                        // TODO: Maybe redirect to error page
                        return false;
